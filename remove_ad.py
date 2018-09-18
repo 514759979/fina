@@ -5,12 +5,16 @@ import xlwt
 import os
 import sys
 import json
+import logging
+import traceback
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 from PyQt5.QtCore import QTranslator
 
 from mainwindow import Ui_MainWindow
 CONFIG = 'settings.json'
+LOG_NAME = 'filter.log'
+FORMAT = '%(asctime)s : %(levelname)-5.5s [%(lineno)s] %(message)s'
 
 def load_config(path):
     with open(path, 'r', encoding='utf-8') as fp:
@@ -24,6 +28,7 @@ def load_config(path):
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
+        logging.basicConfig(level=logging.DEBUG, format=FORMAT, filename=LOG_NAME)
         global CONFIG
         self.config = load_config(CONFIG)
         print(self.config)
@@ -45,7 +50,6 @@ class MainWindow(QMainWindow):
 
     def clicked_open_file(self):
         file_name, file_type = QFileDialog.getOpenFileName(self, u"选取文件", "./", "ALL Files (*);;xlsx Files (*.xlsx)")
-        #print(file_name)
         if os.path.exists(file_name):
             self.ui.input_file_path.setText(file_name)
 
@@ -68,24 +72,29 @@ class MainWindow(QMainWindow):
             pass
 
     def start_process(self, path, index, col_num):
-        data = xlrd.open_workbook(path)
-        rs = data.sheets()[index]
-        col_values = []
-        col_values.extend(rs.col_values(col_num))
+        logging.debug('path:{0} index:{1} col:{2}'.format(path, index, col_num))
+        try:
+            data = xlrd.open_workbook(path)
+            rs = data.sheet_by_index(index)
+            col_values = []
+            col_values.extend(rs.col_values(col_num))
 
-        wb = xlwt.Workbook()
-        ws = wb.add_sheet('result')
+            wb = xlwt.Workbook()
+            ws = wb.add_sheet('result')
 
-        for i, v in enumerate(col_values):
-            write_list = []
-            for field in self.FIELDS:
-                if field in v:
-                    write_list.append(field)
-            write_value = ' '.join(write_list)
-            ws.write(i, 0, write_value)
+            for i, v in enumerate(col_values):
+                write_list = []
+                for field in self.FIELDS:
+                    if field in v:
+                        write_list.append(field)
+                write_value = ' '.join(write_list)
+                ws.write(i, 0, write_value)
 
-        wb.save('result.xlsx')
-        self.echo(u"完成")
+            wb.save('result.xlsx')
+            self.echo(u"完成")
+        except Exception as e:
+            self.echo('Found an error!  Please check log!')
+            logging.error(traceback.format_exc(limit=3))
 
 
 if __name__ == '__main__':
