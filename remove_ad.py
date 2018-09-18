@@ -31,8 +31,8 @@ class MainWindow(QMainWindow):
         logging.basicConfig(level=logging.DEBUG, format=FORMAT, filename=LOG_NAME)
         global CONFIG
         self.config = load_config(CONFIG)
-        print(self.config)
         self.FIELDS = self.config['fields']
+        logging.info('fields:{0}'.format(self.FIELDS))
         super(MainWindow, self).__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
