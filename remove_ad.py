@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowTitle(u"南丁格尔-过滤器 v0.1")
+        self.setWindowTitle(u"南丁格尔-过滤器 v0.2")
 
         self.file_path = None
         self.sheet_index = None

@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(365, 300)
+        MainWindow.resize(374, 300)
         self.centralWidget = QtWidgets.QWidget(MainWindow)
         self.centralWidget.setObjectName("centralWidget")
         self.choose_ptn = QtWidgets.QPushButton(self.centralWidget)
@@ -21,7 +21,7 @@ class Ui_MainWindow(object):
         self.label_info.setGeometry(QtCore.QRect(120, 80, 131, 21))
         self.label_info.setObjectName("label_info")
         self.title = QtWidgets.QLabel(self.centralWidget)
-        self.title.setGeometry(QtCore.QRect(60, 20, 231, 31))
+        self.title.setGeometry(QtCore.QRect(50, 20, 331, 31))
         font = QtGui.QFont()
         font.setPointSize(19)
         self.title.setFont(font)
@@ -47,7 +47,7 @@ class Ui_MainWindow(object):
         self.column.setObjectName("column")
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtWidgets.QMenuBar(MainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 365, 22))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 374, 22))
         self.menuBar.setObjectName("menuBar")
         MainWindow.setMenuBar(self.menuBar)
         self.mainToolBar = QtWidgets.QToolBar(MainWindow)
