@@ -31,11 +31,13 @@ class MainWindow(QMainWindow):
         global CONFIG
         self.config = load_config(CONFIG)
         self.FIELDS = self.config['fields']
+        self.RANKS = self.config['ranks']
+
         logging.info(u'fields:{0}'.format(self.FIELDS))
         super(MainWindow, self).__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowTitle(u"南丁格尔-过滤器 v0.3")
+        self.setWindowTitle(u"南丁格尔工具箱 v0.4")
 
         self.file_path = None
         self.sheet_index = None
@@ -69,15 +71,23 @@ class MainWindow(QMainWindow):
             self.start_process(f, i, c)
         else:
             pass
-            
+
     def find_keys(self, keys, order):
         key = r'|'.join(keys)
         patt = re.compile(key)
         result = re.findall(patt, order)
         return result
 
+    def get_rank(self, size):
+        max_len = len(self.RANKS)
+        if size > max_len:
+            logging.info('keys size more than ranks size:{}'.format(size))
+            size = max_len
+
+        return self.RANKS[:size]
+
     def start_process(self, path, index, col_num):
-        logging.debug(u'path:{0} index:{1} col:{2}'.format(path, index, col_num))
+        logging.info(u'path:{0} index:{1} col:{2}'.format(path, index, col_num))
         try:
             data = xlrd.open_workbook(path)
             rs = data.sheet_by_index(index)
@@ -92,8 +102,10 @@ class MainWindow(QMainWindow):
                     logging.error('line:{0} V:{1}'.format(i+1, v))
                 else:
                     res = self.find_keys(self.FIELDS, v)
-                    write_value = ' '.join(res)
-                    ws.write(i, 0, write_value)
+                    rk = self.get_rank(len(res))
+                    
+                    ws.write(i, 0, ' '.join(res))
+                    ws.write(i, 1, '、'.join(rk))
 
             wb.save('result.xlsx')
             self.echo(u"完成")
