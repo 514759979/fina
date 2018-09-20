@@ -7,6 +7,7 @@ import sys
 import json
 import logging
 import traceback
+import re
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 from PyQt5.QtCore import QTranslator
@@ -23,8 +24,6 @@ def load_config(path):
 
     return config
 
-#FIELDS = [u'服装', u'教育', u'蜂蜜', u'海参', u'减肥', u'补肾', u'皮肤病', u'糖尿病', u'祛斑', u'小说', u'胃病', u'酵素', u'白酒', u'生发', u'失眠', u'面膜', u'情感进线']
-
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -32,11 +31,11 @@ class MainWindow(QMainWindow):
         global CONFIG
         self.config = load_config(CONFIG)
         self.FIELDS = self.config['fields']
-        logging.info('fields:{0}'.format(self.FIELDS))
+        logging.info(u'fields:{0}'.format(self.FIELDS))
         super(MainWindow, self).__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowTitle(u"南丁格尔-过滤器 v0.2")
+        self.setWindowTitle(u"南丁格尔-过滤器 v0.3")
 
         self.file_path = None
         self.sheet_index = None
@@ -49,7 +48,7 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, u"返回值", value, QMessageBox.Ok)
 
     def clicked_open_file(self):
-        file_name, file_type = QFileDialog.getOpenFileName(self, u"选取文件", "./", "ALL Files (*);;xlsx Files (*.xlsx)")
+        file_name, _ = QFileDialog.getOpenFileName(self, u"选取文件", "./", "ALL Files (*);;xlsx Files (*.xlsx)")
         if os.path.exists(file_name):
             self.ui.input_file_path.setText(file_name)
 
@@ -70,9 +69,15 @@ class MainWindow(QMainWindow):
             self.start_process(f, i, c)
         else:
             pass
+            
+    def find_keys(self, keys, order):
+        key = r'|'.join(keys)
+        patt = re.compile(key)
+        result = re.findall(patt, order)
+        return result
 
     def start_process(self, path, index, col_num):
-        logging.debug('path:{0} index:{1} col:{2}'.format(path, index, col_num))
+        logging.debug(u'path:{0} index:{1} col:{2}'.format(path, index, col_num))
         try:
             data = xlrd.open_workbook(path)
             rs = data.sheet_by_index(index)
@@ -83,18 +88,18 @@ class MainWindow(QMainWindow):
             ws = wb.add_sheet('result')
 
             for i, v in enumerate(col_values):
-                write_list = []
-                for field in self.FIELDS:
-                    if field in v:
-                        write_list.append(field)
-                write_value = ' '.join(write_list)
-                ws.write(i, 0, write_value)
+                if not isinstance(v, str):
+                    logging.error('line:{0} V:{1}'.format(i+1, v))
+                else:
+                    res = self.find_keys(self.FIELDS, v)
+                    write_value = ' '.join(res)
+                    ws.write(i, 0, write_value)
 
             wb.save('result.xlsx')
             self.echo(u"完成")
-        except Exception as e:
-            self.echo('Found an error!  Please check log!')
-            logging.error(traceback.format_exc(limit=3))
+        except Exception:
+            self.echo(u'发现错误，请检查log！')
+            logging.error(traceback.format_exc(limit=5))
 
 
 if __name__ == '__main__':

@@ -2,3 +2,4 @@
 *.pyc
 *.spec
 *.log
+.vscode/
